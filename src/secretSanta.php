@@ -171,7 +171,6 @@ Santa";
     /**
      * Send Emails
      * Email all users to tell them who they've been assigned for secret santa
-     * @param $matched users
      */
     private function sendEmails() {
         if (sizeof($this->assignedUsers) == 0) {
@@ -232,7 +231,7 @@ Santa";
     /**
      * Get a list of all sent emails
      * Useful to keep a list of who gets who in secret santa, incase you need to remind people who they got, or re-jig the chosen people if someone drops out
-     * @return Array of emails
+     * @return Array of emails that were sent out
      */
     public function getSentEmails() {
         return $this->sentLog;
