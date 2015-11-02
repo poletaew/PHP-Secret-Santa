@@ -219,8 +219,7 @@ Santa";
             $mail->AddAddress($giver['email'], $giver['name']);
 
             if (!$mail->send()) {
-                //throw new Exception($mail->ErrorInfo);
-                echo $mail->ErrorInfo;
+                throw new Exception($mail->ErrorInfo);
             } else {
                 echo "sent<br />\n";
                 $mail->ClearAddresses();
