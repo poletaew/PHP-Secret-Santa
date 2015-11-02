@@ -1,0 +1,20 @@
+{
+    "name": "secret-santa",
+    "description": "Secret Santa",
+    "authors": [
+        {
+            "name": "Nick Edwards",
+            "email": "nick@nick-edwards.co.uk"
+        }
+    ],
+    "repositories": [
+    ],
+    "require": {
+        "phpmailer/phpmailer": "dev-master"
+    },
+    "require-dev": {
+    },
+    "autoload": {
+        "psr-0": { "SecretSanta": "src/" }
+    }
+}
