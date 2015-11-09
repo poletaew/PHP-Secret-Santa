@@ -192,32 +192,29 @@ Santa";
 
             // send emails using phpMailer
             $mail = new PHPMailer;
+
+            // set SMTP settings if being used
             if ($this->useSmtp) {
                 $mail->IsSMTP();
                 $mail->SMTPDebug = $this->smtpConfig['debugLevel'];
-                // enable SMTP authentication
                 $mail->SMTPAuth = true;
-                // set ssl or tls
                 $mail->SMTPSecure = $this->smtpConfig['encryption'];
-                // sets SMTP server
                 $mail->Host = $this->smtpConfig['host'];
-                // set the SMTP port
                 $mail->Port = $this->smtpConfig['port'];
-                // SMTP username
                 $mail->Username = $this->smtpConfig['username'];
-                // SMTP password
                 $mail->Password = $this->smtpConfig['password'];
             }
 
+            // set shared mailer settings
             $mail->From = $this->mailFromEmail;
             $mail->FromName = $this->mailFromName;
             $mail->AddReplyTo($this->mailReplyToEmail, $this->mailReplyToName);
             $mail->Subject = $this->mailSubject;
             $mail->Body = $mailBody;
             $mail->IsHTML(false);
-            
             $mail->AddAddress($giver['email'], $giver['name']);
 
+            // send email
             if (!$mail->send()) {
                 throw new Exception($mail->ErrorInfo);
             } else {
