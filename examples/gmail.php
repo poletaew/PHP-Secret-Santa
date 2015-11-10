@@ -10,7 +10,7 @@ define('APP_PATH', dirname(__DIR__));
 
 include_once APP_PATH . '/vendor/autoload.php';
 
-$santa = new SecretSanta();
+$santa = new secretSanta();
 
 $smtpConfig = [
     // 0 = off (for production use)

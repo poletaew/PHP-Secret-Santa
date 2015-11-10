@@ -6,17 +6,15 @@
  * @Author Nick Edwards (2015)
  *
  * Basic Usage:
- *     $santa = new SecretSanta();
+ *     $santa = new secretSanta();
  *     $santa->run(
  *         ['name'=>'Test 1','email'=>'test1@example.com'],
  *         ['name'=>'Test 2','email'=>'test2@example.com'],
  *         ['name'=>'Test 3','email'=>'test3@example.com'],
  *     );
  */
-Class SecretSanta {
-    private $itemValue = 10;
-    private $currencySymbol = '£';
-
+Class secretSanta 
+{
     private $useSmtp = false;
     private $smtpConfig = [
         'debugLevel' => 0,
@@ -27,18 +25,22 @@ Class SecretSanta {
         'password' => '',
     ];
 
-    private $mailFromName = 'Santa';
-    private $mailFromEmail = 'santa@northpole.com';
-    private $mailReplyToName = 'Santa';
-    private $mailReplyToEmail = 'santa@northpole.com';
-    private $mailSubject = 'Secret Santa';
-    private $mailBody = "Hello {{name}}, 
+    private $mailConfig = [
+        'itemValue' => 10,
+        'currencySymbol' => '£',
+        'fromName' => 'Santa',
+        'fromEmail' => 'santa@northpole.com',
+        'replyToName' => 'Santa',
+        'replyToEmail' => 'santa@northpole.com',
+        'subject' => 'Secret Santa'
+        'body' => 'Hello {{name}}, 
 For Secret Santa this year you will be buying a present for {{givingToName}} ({{givingToEmail}})
 
 Presents should all be around {{price}}
 
 Good luck and Merry Christmas,
-Santa";
+Santa'
+    ];
 
     private $sentLog = [];
     private $assignedUsers = [];
@@ -50,18 +52,13 @@ Santa";
      * @param $usersArray Array
      * @return true/false on success/failure
      */
-    public function __construct($config = []) {
+    public function __construct($config = []) 
+    {
         // set any details passed in via the config array
-        if (isset($config['itemValue']) && is_numeric($config['itemValue'])) {
-            $this->itemValue = $config['itemValue'];
+        $keys = array_keys($this->mailConfig);
+        foreach ($keys as $key) {
+            if (isset($config[$key])) $this->mailConfig[$key] = $config[$key];
         }
-        if (isset($config['currencySymbol'])) $this->currencySymbol = $config['currencySymbol'];
-        if (isset($config['mailFromName'])) $this->mailFromName = $config['mailFromName'];
-        if (isset($config['mailFromEmail'])) $this->mailFromEmail = $config['mailFromEmail'];
-        if (isset($config['mailReplyToName'])) $this->mailReplyToName = $config['mailReplyToName'];
-        if (isset($config['mailReplyToEmail'])) $this->mailReplyToEmail = $config['mailReplyToEmail'];
-        if (isset($config['mailSubject'])) $this->mailSubject = $config['mailSubject'];
-        if (isset($config['mailBody'])) $this->mailBody = $config['mailBody'];
     }
 
     /**
@@ -70,7 +67,8 @@ Santa";
      * @param  array  $config [description]
      * @return true on success
      */
-    public function useSMTP($config = []) {
+    public function useSMTP($config = []) 
+    {
         $this->useSmtp = true;
         $keys = array_keys($this->smtpConfig);
         foreach ($keys as $key) {
@@ -89,7 +87,8 @@ Santa";
      * @param $usersArray Array of users
      * @return true/false on success/failure
      */
-    public function run($usersArray){
+    public function run($usersArray) 
+    {
         try {
             //Check array is safe to use
             if ($this->validateArray($usersArray)) {
@@ -107,16 +106,17 @@ Santa";
      * @param $usersArray Array of users
      * @return true if valid. Exception thrown if not.
      */
-    private function validateArray($usersArray){
+    private function validateArray($usersArray) 
+    {
         // Check more than 3 participents
-        if (sizeof($usersArray) < 3){
+        if (sizeof($usersArray) < 3) {
             throw new Exception('A minimum of 3 secret santa participants is required');
         }
 
         // Check for duplicate emails
         $tmpEmails = [];
         foreach ($usersArray as $u) {
-            if (in_array($u['email'], $tmpEmails)){
+            if (in_array($u['email'], $tmpEmails)) {
                 throw new Exception('Duplicate emails found. Users cannot have the same email address');
             }
             $tmpEmails[] = $u['email'];
@@ -132,13 +132,14 @@ Santa";
      * @param $usersArray of users
      * @return array of assigned users
      */
-    private function assignUsers($usersArray){
+    private function assignUsers($usersArray) 
+    {
         $givers     = $usersArray;
         $receivers  = $usersArray;
 
-        foreach($givers as $i => $user){
+        foreach($givers as $i => $user) {
             $notAssigned = true;
-            while($notAssigned){
+            while($notAssigned) {
                 // randomly choose a person
                 $randomUser = mt_rand(0, sizeof($receivers)-1);
 
@@ -172,20 +173,21 @@ Santa";
      * Send Emails
      * Email all users to tell them who they've been assigned for secret santa
      */
-    private function sendEmails() {
+    private function sendEmails() 
+    {
         if (sizeof($this->assignedUsers) == 0) {
             throw new Exception('Users have not been assigned a secret santa yet.');
         }
         
-        foreach($this->assignedUsers as $giver){
+        foreach($this->assignedUsers as $giver) {
             // replace keywords in the body of the email
             $replacements = [
                 '{{name}}' => $giver['name'],
                 '{{givingToName}}' => $giver['givingTo']['name'],
                 '{{givingToEmail}}' => $giver['givingTo']['email'],
-                '{{price}}' => $this->currencySymbol . sprintf("%01.2f", $this->itemValue),
+                '{{price}}' => $this->mailConfig['currencySymbol'] . sprintf("%01.2f", $this->mailConfig['itemValue']),
             ];
-            $mailBody = str_replace(array_keys($replacements), $replacements, $this->mailBody);
+            $mailBody = str_replace(array_keys($replacements), $replacements, $this->mailConfig['body']);
 
             // log that the email has been sent
             $this->sentLog[] = $giver['name'] . ' (' . $giver['email'] . ')' . ' should get a gift for ' . $giver['givingTo']['name'] . ' (' . $giver['givingTo']['email'] . ')';
@@ -206,10 +208,10 @@ Santa";
             }
 
             // set shared mailer settings
-            $mail->From = $this->mailFromEmail;
-            $mail->FromName = $this->mailFromName;
-            $mail->AddReplyTo($this->mailReplyToEmail, $this->mailReplyToName);
-            $mail->Subject = $this->mailSubject;
+            $mail->From = $this->mailConfig['fromEmail'];
+            $mail->FromName = $this->mailConfig['fromName'];
+            $mail->AddReplyTo($this->mailConfig['replyToEmail'], $this->mailConfig['replyToName']);
+            $mail->Subject = $this->mailConfig['subject'];
             $mail->Body = $mailBody;
             $mail->IsHTML(false);
             $mail->AddAddress($giver['email'], $giver['name']);
@@ -229,7 +231,8 @@ Santa";
      * Useful to keep a list of who gets who in secret santa, incase you need to remind people who they got, or re-jig the chosen people if someone drops out
      * @return Array of emails that were sent out
      */
-    public function getSentEmails() {
+    public function getSentEmails() 
+    {
         return $this->sentLog;
     }
 }

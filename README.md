@@ -11,7 +11,7 @@ To install the composer dependancies, run the following command from the reposit
 ## Basic Usage
 To run, all you need to pass into the script is an array containing (a minimum of) 3 participants
 
-    $santa = new SecretSanta();
+    $santa = new secretSanta();
     $santa->run(
         ['name'=>'Test 1','email'=>'test1@example.com'],
         ['name'=>'Test 2','email'=>'test2@example.com'],

@@ -37,7 +37,7 @@ Good luck and Merry Christmas,
 Santa"
 ];
 
-$santa = new SecretSanta($customConfig);
+$santa = new secretSanta($customConfig);
 $santa->run(
     [
         ['name'=>'Test 1','email'=>'test1@example.com'],
