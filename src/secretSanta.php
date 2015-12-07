@@ -46,10 +46,9 @@ Santa'
     private $assignedUsers = [];
 
     /**
-     * Construct
-     * Sets variables where needed
+     * Initialises variables where needed
      * 
-     * @param $usersArray Array
+     * @param array $config configuration settings
      * @return true/false on success/failure
      */
     public function __construct($config = []) 
@@ -62,9 +61,9 @@ Santa'
     }
 
     /**
-     * use SMTP
      * Use SMTP instead of local email server
-     * @param  array  $config [description]
+     * 
+     * @param  array  $config configuration settings
      * @return true on success
      */
     public function useSMTP($config = []) 
@@ -78,13 +77,12 @@ Santa'
     }
     
     /**
-     * Run
      * Runs the secret santa script on an array of users 
      * Checks to see if the array is valid
      * Everyone is assigned a secret santa (that is not themselves)
      * Emails are sent out
      * 
-     * @param $usersArray Array of users
+     * @param array $usersArray array of users
      * @return true/false on success/failure
      */
     public function run($usersArray) 
@@ -103,7 +101,8 @@ Santa'
     /**
      * Validate Array of users
      * Ensure array is safe to use in Secret Santa Script
-     * @param $usersArray Array of users
+     * 
+     * @param array $usersArray array of users
      * @return true if valid. Exception thrown if not.
      */
     private function validateArray($usersArray) 
@@ -129,7 +128,7 @@ Santa'
      * Make sure everyone is assigned randomly
      * Make sure no one is assigned themselves
      *
-     * @param $usersArray of users
+     * @param array $usersArray array of users
      * @return array of assigned users
      */
     private function assignUsers($usersArray) 
@@ -172,6 +171,8 @@ Santa'
     /**
      * Send Emails
      * Email all users to tell them who they've been assigned for secret santa
+     * 
+     * @return true if valid. Exception thrown if not.
      */
     private function sendEmails() 
     {
@@ -224,11 +225,13 @@ Santa'
                 $mail->ClearAddresses();
             }
         }
+        return true;
     }
     
     /**
      * Get a list of all sent emails
      * Useful to keep a list of who gets who in secret santa, incase you need to remind people who they got, or re-jig the chosen people if someone drops out
+     * 
      * @return Array of emails that were sent out
      */
     public function getSentEmails() 
