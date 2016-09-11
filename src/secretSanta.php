@@ -7,11 +7,11 @@
  *
  * Basic Usage:
  *     $santa = new secretSanta();
- *     $santa->run(
+ *     $santa->run([
  *         ['name'=>'Test 1','email'=>'test1@example.com'],
  *         ['name'=>'Test 2','email'=>'test2@example.com'],
  *         ['name'=>'Test 3','email'=>'test3@example.com'],
- *     );
+ *     ]);
  */
 Class secretSanta 
 {
