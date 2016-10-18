@@ -32,8 +32,9 @@ Class secretSanta
         'fromEmail' => 'santa@northpole.com',
         'replyToName' => 'Santa',
         'replyToEmail' => 'santa@northpole.com',
-        'subject' => 'Secret Santa'
+        'subject' => 'Secret Santa',
         'body' => 'Hello {{name}}, 
+
 For Secret Santa this year you will be buying a present for {{givingToName}} ({{givingToEmail}})
 
 Presents should all be around {{price}}
@@ -195,6 +196,7 @@ Santa'
 
             // send emails using phpMailer
             $mail = new PHPMailer;
+            $mail->CharSet = 'UTF-8';
 
             // set SMTP settings if being used
             if ($this->useSmtp) {
