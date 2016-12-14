@@ -139,12 +139,16 @@ Santa'
 
         foreach($givers as $i => $user) {
             $notAssigned = true;
-            while($notAssigned) {
+            while ($notAssigned) {
                 // randomly choose a person
                 $randomUser = mt_rand(0, sizeof($receivers)-1);
 
                 // if chosen user isn't themselves
-                if($user['email'] !== $receivers[$randomUser]['email']) {
+                if (
+                    $user['email'] !== $receivers[$randomUser]['email'] 
+                    && (!isset($receivers[$randomUser]['recievingFrom']) || $receivers[$randomUser]['recievingFrom'] != $user['email'])
+                ) {
+                    $receivers[$randomUser]['recievingFrom'] = $user['email'];
                     // assign the user the randomly picked user
                     $givers[$i]['givingTo'] = $receivers[$randomUser];
                     
