@@ -34,4 +34,4 @@ $santa->run(
     ]
 );
 // simple output
-print_r($santa->getSentEmails());
+print_r($santa->getSentLog());

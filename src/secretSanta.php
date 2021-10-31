@@ -13,10 +13,13 @@
  *         ['name'=>'Test 3','email'=>'test3@example.com'],
  *     ]);
  */
-Class secretSanta 
+
+use PHPMailer\PHPMailer\PHPMailer;
+
+Class secretSanta
 {
-    private $useSmtp = false;
-    private $smtpConfig = [
+    protected $useSmtp = false;
+    protected $smtpConfig = [
         'debugLevel' => 0,
         'encryption' => 'tls',
         'host' => 'smtp.gmail.com',
@@ -25,7 +28,7 @@ Class secretSanta
         'password' => '',
     ];
 
-    private $mailConfig = [
+    protected array $mailConfig = [
         'itemValue' => 10,
         'currencySymbol' => '£',
         'fromName' => 'Santa',
@@ -33,6 +36,7 @@ Class secretSanta
         'replyToName' => 'Santa',
         'replyToEmail' => 'santa@northpole.com',
         'subject' => 'Secret Santa',
+        'sleepBetweenSending' => true,
         'body' => 'Hello {{name}}, 
 
 For Secret Santa this year you will be buying a present for {{givingToName}} ({{givingToEmail}})
@@ -44,7 +48,7 @@ Santa'
     ];
 
     private $sentLog = [];
-    private $assignedUsers = [];
+    protected $assignedUsers = [];
 
     /**
      * Initialises variables where needed
@@ -95,7 +99,7 @@ Santa'
                 return $this->sendEmails();
             }
         } catch (Exception $e) {
-            echo 'ERROR: ' . $e->getMessage() . "<br />\n";
+            echo 'ERROR: ' . $e->getMessage() . "\n";
         }
     }
     
@@ -106,7 +110,7 @@ Santa'
      * @param array $usersArray array of users
      * @return true if valid. Exception thrown if not.
      */
-    private function validateArray($usersArray) 
+    protected function validateArray($usersArray)
     {
         // Check more than 3 participents
         if (sizeof($usersArray) < 3) {
@@ -116,10 +120,11 @@ Santa'
         // Check for duplicate emails
         $tmpEmails = [];
         foreach ($usersArray as $u) {
-            if (in_array($u['email'], $tmpEmails)) {
+            $email = $this->getUserEmail($u);
+            if (in_array($email, $tmpEmails)) {
                 throw new Exception('Duplicate emails found. Users cannot have the same email address');
             }
-            $tmpEmails[] = $u['email'];
+            $tmpEmails[] = $email;
         }
         return true;
     }
@@ -139,16 +144,18 @@ Santa'
 
         foreach($givers as $i => $user) {
             $notAssigned = true;
+            $userEmail = $this->getUserEmail($user);
             while ($notAssigned) {
                 // randomly choose a person
                 $randomUser = mt_rand(0, sizeof($receivers)-1);
+                $receiverEmail = $this->getUserEmail($receivers[$randomUser]);
 
                 // if chosen user isn't themselves
                 if (
-                    $user['email'] !== $receivers[$randomUser]['email'] 
-                    && (!isset($receivers[$randomUser]['recievingFrom']) || $receivers[$randomUser]['recievingFrom'] != $user['email'])
+                    $userEmail !== $receiverEmail
+                    && (!isset($receivers[$randomUser]['recievingFrom']) || $receivers[$randomUser]['recievingFrom'] != $userEmail)
                 ) {
-                    $receivers[$randomUser]['recievingFrom'] = $user['email'];
+                    $receivers[$randomUser]['recievingFrom'] = $userEmail;
                     // assign the user the randomly picked user
                     $givers[$i]['givingTo'] = $receivers[$randomUser];
                     
@@ -169,8 +176,15 @@ Santa'
             }
         }
 
-        $this->assignedUsers = $givers;
-        return $this->assignedUsers;
+        return $this->assignedUsers = $givers;
+    }
+
+    protected function getUserEmail($user){
+        return $user['email'];
+    }
+
+    protected function getUserName($user){
+        return $user['name'];
     }
     
     /**
@@ -179,24 +193,21 @@ Santa'
      * 
      * @return true if valid. Exception thrown if not.
      */
-    private function sendEmails() 
+    protected function sendEmails()
     {
         if (sizeof($this->assignedUsers) == 0) {
             throw new Exception('Users have not been assigned a secret santa yet.');
         }
-        
-        foreach($this->assignedUsers as $giver) {
-            // replace keywords in the body of the email
-            $replacements = [
-                '{{name}}' => $giver['name'],
-                '{{givingToName}}' => $giver['givingTo']['name'],
-                '{{givingToEmail}}' => $giver['givingTo']['email'],
-                '{{price}}' => $this->mailConfig['currencySymbol'] . sprintf("%01.2f", $this->mailConfig['itemValue']),
-            ];
-            $mailBody = str_replace(array_keys($replacements), $replacements, $this->mailConfig['body']);
+
+        $cnt = 1;
+        foreach ($this->assignedUsers as $giver) {
+            $giverName = $this->getUserName($giver);
+            $giverEmail = $this->getUserEmail($giver);
+            $givingToName = $this->getUserName($giver['givingTo']);
+            $givingToEmail = $this->getUserEmail($giver['givingTo']);
 
             // log that the email has been sent
-            $this->sentLog[] = $giver['name'] . ' (' . $giver['email'] . ')' . ' should get a gift for ' . $giver['givingTo']['name'] . ' (' . $giver['givingTo']['email'] . ')';
+            $this->sentLog[] = $giverName . ' (' . $giverEmail . ')' . ' should get a gift for ' . $givingToName . ' (' . $givingToEmail . ')';
 
             // send emails using phpMailer
             $mail = new PHPMailer;
@@ -219,16 +230,22 @@ Santa'
             $mail->FromName = $this->mailConfig['fromName'];
             $mail->AddReplyTo($this->mailConfig['replyToEmail'], $this->mailConfig['replyToName']);
             $mail->Subject = $this->mailConfig['subject'];
-            $mail->Body = $mailBody;
+            $mail->Body = $this->getMailBody($giver);
             $mail->IsHTML(false);
-            $mail->AddAddress($giver['email'], $giver['name']);
+            $mail->AddAddress($giverEmail, $giverName);
 
             // send email
             if (!$mail->send()) {
                 throw new Exception($mail->ErrorInfo);
-            } else {
-                echo "sent<br />\n";
+            }
+            else {
+                echo "Sent to $giverEmail successfully\n";
+                //Will prevent blocking by most of SMTP servers
+                if ($this->mailConfig['sleepBetweenSending'] && $cnt % 5  == 0) {
+                    sleep(rand(2,9));
+                }
                 $mail->ClearAddresses();
+                $cnt++;
             }
         }
         return true;
@@ -240,8 +257,20 @@ Santa'
      * 
      * @return Array of emails that were sent out
      */
-    public function getSentEmails() 
+    public function getSentLog(): array
     {
         return $this->sentLog;
+    }
+
+    protected function getMailBody($giver)
+    {
+        $replacements = [
+            '{{name}}' => $this->getUserName($giver),
+            '{{givingToName}}' => $this->getUserName($giver['givingTo']),
+            '{{givingToEmail}}' => $this->getUserEmail($giver['givingTo']),
+            '{{price}}' => $this->mailConfig['currencySymbol'] . sprintf("%01.2f", $this->mailConfig['itemValue']),
+        ];
+
+        return str_replace(array_keys($replacements), $replacements, $this->mailConfig['body']);
     }
 }
