@@ -21,6 +21,7 @@ class extendedSecretSanta extends secretSanta
         'subject' => 'Secret Santa',
         'receiverNamePosition' => 0,
         'receiverEmailPosition' => 1,
+        'isHtml' => false,
         'body' => 'Hello {{name}},
 
 This year you are chosen as a Secret Santa for {{0}}.

@@ -37,6 +37,7 @@ Class secretSanta
         'replyToEmail' => 'santa@northpole.com',
         'subject' => 'Secret Santa',
         'sleepBetweenSending' => true,
+        'isHtml' => false,
         'body' => 'Hello {{name}}, 
 
 For Secret Santa this year you will be buying a present for {{givingToName}} ({{givingToEmail}})
@@ -231,7 +232,7 @@ Santa'
             $mail->AddReplyTo($this->mailConfig['replyToEmail'], $this->mailConfig['replyToName']);
             $mail->Subject = $this->mailConfig['subject'];
             $mail->Body = $this->getMailBody($giver);
-            $mail->IsHTML(false);
+            $mail->IsHTML($this->mailConfig['isHtml']);
             $mail->AddAddress($giverEmail, $giverName);
 
             // send email
